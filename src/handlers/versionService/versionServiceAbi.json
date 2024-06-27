@@ -1,0 +1,1 @@
+["function getVersion() view returns (bytes memory, bytes memory)"]
