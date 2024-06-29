@@ -22,6 +22,14 @@ describe("compileHelloContract", () => {
     expect(abi.functions).toHaveProperty("hello()");
     expect(abi.functions).toHaveProperty("helloOffchain()");
     expect(abi.functions).toHaveProperty("helloCallback(bytes)");
+    const helloOffchainFunction = contract.abi.find(
+      (item: any) => item.type === "function" && item.name === "helloOffchain"
+    );
+    expect(helloOffchainFunction).toBeDefined();
+    expect(helloOffchainFunction.stateMutability).toBe("view");
+    expect(helloOffchainFunction.inputs).toHaveLength(0);
+    expect(helloOffchainFunction.outputs).toHaveLength(1);
+    expect(helloOffchainFunction.outputs[0].type).toBe("string");
   });
 });
 

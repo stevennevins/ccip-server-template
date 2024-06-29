@@ -1,6 +1,5 @@
 import { ethers } from "ethers";
 import { JsonRpcProvider } from "@ethersproject/providers";
-import ganache from "ganache";
 import { makeApp } from "../src/app";
 import { utils } from "ethers";
 import { getEnv } from "../src/utils";
@@ -11,6 +10,7 @@ import {
   compileSimpleBytecodeContract,
   compileHelloContract,
 } from "./utils/compile";
+import { spawn } from "child_process";
 
 describe("E2E Tests with Local Ethereum Node", () => {
   let provider: JsonRpcProvider;
@@ -22,8 +22,7 @@ describe("E2E Tests with Local Ethereum Node", () => {
   beforeAll(async () => {
     dotenv.config();
 
-    node = ganache.server();
-    await node.listen(8545);
+    node = spawn("anvil", []);
 
     const PROVIDER_URL = "http://localhost:8545";
     provider = new ethers.providers.JsonRpcProvider(PROVIDER_URL);
@@ -41,7 +40,7 @@ describe("E2E Tests with Local Ethereum Node", () => {
 
     viemClient = createTestClient({
       chain: localhost,
-      mode: "ganache",
+      mode: "anvil",
       transport: http(),
     })
       .extend(publicActions)
@@ -49,7 +48,7 @@ describe("E2E Tests with Local Ethereum Node", () => {
   });
 
   afterAll(async () => {
-    await node.close();
+    node.kill();
   });
 
   describe("Setup Tests", () => {
@@ -58,9 +57,9 @@ describe("E2E Tests with Local Ethereum Node", () => {
       expect(ccipServer).toBeInstanceOf(Function);
     });
 
-    it("should confirm the chain id and rpc url of the ganache node", async () => {
+    it("should confirm the chain id and rpc url of the anvil node", async () => {
       const network = await provider.getNetwork();
-      expect(network.chainId).toBe(1337);
+      expect(network.chainId).toBe(31337);
 
       const rpcUrl = provider.connection.url;
       expect(rpcUrl).toBe("http://localhost:8545");
@@ -86,6 +85,15 @@ describe("E2E Tests with Local Ethereum Node", () => {
       helloVerifierContractAddress = helloVerifierContract.address;
     });
 
+    it("should have correct bytecode", async () => {
+      const deployedBytecode = await provider.getCode(
+        helloVerifierContractAddress
+      );
+      expect(deployedBytecode).toBe(
+        "0x" + artifact.evm.deployedBytecode.object
+      );
+    });
+
     it("should deploy HelloVerifier contract", () => {
       expect(helloVerifierContractAddress).toBeTruthy();
     });
@@ -97,6 +105,34 @@ describe("E2E Tests with Local Ethereum Node", () => {
 
     it("should call the helloOffchain function of HelloVerifier contract using ethers without throwing", async () => {
       const result = await helloVerifierContract.helloOffchain();
+      expect(result).toBeDefined();
+    });
+
+    it("should have correct helloOffchain function selector", () => {
+      const expectedSelector = ethers.utils.id("helloOffchain()").slice(0, 10);
+      const actualSelector = artifact.evm.methodIdentifiers["helloOffchain()"];
+      expect(actualSelector).toBe(expectedSelector.slice(2)); // Remove '0x' prefix
+    });
+
+    it("should call helloOffchain using a low level view call", async () => {
+      const data = ethers.utils.id("helloOffchain()").slice(0, 10); // Function selector
+      const tx = {
+        to: helloVerifierContractAddress,
+        data: data,
+      };
+
+      const result = await provider.call(tx, "latest");
+      expect(result).toBeDefined();
+    });
+
+    it("should call helloOffchain using minimal interface", async () => {
+      const minimalAbi = ["function helloOffchain() view returns (string)"];
+      const contract = new ethers.Contract(
+        helloVerifierContractAddress,
+        minimalAbi,
+        provider
+      );
+      const result = await contract.helloOffchain();
       expect(result).toBeDefined();
     });
 

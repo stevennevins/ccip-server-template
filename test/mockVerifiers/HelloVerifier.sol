@@ -17,19 +17,7 @@ contract HelloVerifier {
     }
 
     function helloOffchain() external view returns (string memory) {
-        // string[] memory urls = new string[](1);
-        // urls[0] = "http://localhost:8000/"; // Replace with your actual server URL
-        // bytes memory callData = abi.encodeWithSignature(
-        //     "hello() view returns (string memory)"
-        // );
-        // revert OffchainLookup(
-        //     address(this),
-        //     urls,
-        //     callData,
-        //     this.helloCallback.selector,
-        //     ""
-        // );
-        return "";
+        return string("hello");
     }
 
     function helloCallback(
