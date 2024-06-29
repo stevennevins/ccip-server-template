@@ -1,15 +1,17 @@
-import { Server } from '@chainlink/ccip-read-server';
-import { utils } from 'ethers';
-import { fromHumanAbi } from './utils';
-import { GetVersionHandler } from './handlers/versionService/versionService';
-import versionServiceAbi from './handlers/versionService/versionServiceAbi.json';
+import { Server } from "@chainlink/ccip-read-server";
+import { utils } from "ethers";
+import { fromHumanAbi } from "./utils";
+import { SignedHelloHandler } from "./handlers/signedHelloService/signedHelloService";
+import signedHelloAbi from "./handlers/signedHelloService/signedHelloAbi.json";
+import { HelloHandler } from "./handlers/helloService/helloService";
+import helloServiceAbi from "./handlers/helloService/helloServiceAbi.json";
 
-const gatewayAbi = fromHumanAbi(versionServiceAbi);
+const gatewayAbi = fromHumanAbi([...signedHelloAbi, ...helloServiceAbi]);
 
 export function makeApp(signer: utils.SigningKey, basePath: string) {
-    const server = new Server();
-    const handlers = [new GetVersionHandler(signer)];
-    server.add(gatewayAbi, handlers);
+  const server = new Server();
+  const handlers = [new SignedHelloHandler(signer), new HelloHandler()];
+  server.add(gatewayAbi, handlers);
 
-    return server.makeApp(basePath);
+  return server.makeApp(basePath);
 }

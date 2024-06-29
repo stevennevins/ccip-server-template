@@ -7,7 +7,7 @@ dotenv.config();
 
 const signer = new utils.SigningKey(getEnv("SERVER_PRIVATE_KEY"));
 const basePath = "/";
-const port = process.env.PORT || 8000;
+const port = 8000;
 
 const app = makeApp(signer, basePath);
 app.listen(port);
