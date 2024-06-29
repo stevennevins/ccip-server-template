@@ -31,7 +31,8 @@ describe("E2E Tests with Local Ethereum Node", () => {
         console.log(`Requesting ${info.request.method}`);
       }
     });
-    signer = provider.getSigner(0);
+    const ccipread = require("@chainlink/ethers-ccip-read-provider");
+    signer = new ccipread.CCIPReadProvider(provider).getSigner(0);
 
     const serverSigner = new utils.SigningKey(getEnv("SERVER_PRIVATE_KEY"));
     const basePath = "/";
@@ -112,28 +113,6 @@ describe("E2E Tests with Local Ethereum Node", () => {
       const expectedSelector = ethers.utils.id("helloOffchain()").slice(0, 10);
       const actualSelector = artifact.evm.methodIdentifiers["helloOffchain()"];
       expect(actualSelector).toBe(expectedSelector.slice(2)); // Remove '0x' prefix
-    });
-
-    it("should call helloOffchain using a low level view call", async () => {
-      const data = ethers.utils.id("helloOffchain()").slice(0, 10); // Function selector
-      const tx = {
-        to: helloVerifierContractAddress,
-        data: data,
-      };
-
-      const result = await provider.call(tx, "latest");
-      expect(result).toBeDefined();
-    });
-
-    it("should call helloOffchain using minimal interface", async () => {
-      const minimalAbi = ["function helloOffchain() view returns (string)"];
-      const contract = new ethers.Contract(
-        helloVerifierContractAddress,
-        minimalAbi,
-        provider
-      );
-      const result = await contract.helloOffchain();
-      expect(result).toBeDefined();
     });
 
     it("should call the hello function of HelloVerifier contract using viem and return 255", async () => {

@@ -21,7 +21,7 @@ describe("compileHelloContract", () => {
     console.log("ABI:", contract.abi);
     expect(abi.functions).toHaveProperty("hello()");
     expect(abi.functions).toHaveProperty("helloOffchain()");
-    expect(abi.functions).toHaveProperty("helloCallback(bytes)");
+    expect(abi.functions).toHaveProperty("helloCallback(bytes,bytes)");
     const helloOffchainFunction = contract.abi.find(
       (item: any) => item.type === "function" && item.name === "helloOffchain"
     );
