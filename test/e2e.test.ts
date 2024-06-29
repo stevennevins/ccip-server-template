@@ -115,7 +115,7 @@ describe("E2E Tests with Local Ethereum Node", () => {
     it("should call the helloOffchain function of HelloVerifier contract using viem without throwing", async () => {
       const result = await viemClient.readContract({
         address: helloVerifierContractAddress,
-        abi: JSON.stringify(helloVerifierAbi),
+        abi: helloVerifierAbi,
         functionName: "helloOffchain",
       });
 
