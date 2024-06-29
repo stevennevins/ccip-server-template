@@ -104,9 +104,9 @@ describe("E2E Tests with Local Ethereum Node", () => {
       expect(result.toNumber()).toBe(255);
     });
 
-    it("should call the helloOffchain function of HelloVerifier contract using ethers without throwing", async () => {
+    it("should call the helloOffchain function of HelloVerifier contract using ethers and return 'hello'", async () => {
       const result = await helloVerifierContract.helloOffchain();
-      expect(result).toBeDefined();
+      expect(result).toBe("hello");
     });
 
     it("should have correct helloOffchain function selector", () => {
@@ -125,14 +125,14 @@ describe("E2E Tests with Local Ethereum Node", () => {
       expect(result).toBe(255n);
     });
 
-    it("should call the helloOffchain function of HelloVerifier contract using viem without throwing", async () => {
+    it("should call the helloOffchain function of HelloVerifier contract using viem and return 'hello'", async () => {
       const result = await viemClient.readContract({
         address: helloVerifierContractAddress,
         abi: artifact.abi,
         functionName: "helloOffchain",
       });
 
-      expect(result).toBeDefined();
+      expect(result).toBe("hello");
     });
   });
 
