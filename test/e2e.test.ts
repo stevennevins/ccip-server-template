@@ -70,17 +70,15 @@ describe("E2E Tests with Local Ethereum Node", () => {
   describe("Hello Function Tests", () => {
     let helloVerifierContract: ethers.Contract;
     let helloVerifierContractAddress: string;
-    let helloVerifierAbi: any;
+    let artifact: any;
 
     beforeAll(async () => {
       const helloVerifierArtifact = await compileHelloContract();
       const contractName = "HelloVerifier.sol";
-      const contract =
-        helloVerifierArtifact.contracts[contractName].HelloVerifier;
-      helloVerifierAbi = contract.abi;
+      artifact = helloVerifierArtifact.contracts[contractName].HelloVerifier;
       const HelloVerifierFactory = new ethers.ContractFactory(
-        helloVerifierAbi,
-        contract.evm.bytecode.object,
+        artifact.abi,
+        artifact.evm.bytecode.object,
         signer
       );
       helloVerifierContract = await HelloVerifierFactory.deploy();
@@ -105,7 +103,7 @@ describe("E2E Tests with Local Ethereum Node", () => {
     it("should call the hello function of HelloVerifier contract using viem and return 255", async () => {
       const result = await viemClient.readContract({
         address: helloVerifierContractAddress,
-        abi: helloVerifierAbi,
+        abi: artifact.abi,
         functionName: "hello",
       });
 
@@ -115,7 +113,7 @@ describe("E2E Tests with Local Ethereum Node", () => {
     it("should call the helloOffchain function of HelloVerifier contract using viem without throwing", async () => {
       const result = await viemClient.readContract({
         address: helloVerifierContractAddress,
-        abi: helloVerifierAbi,
+        abi: artifact.abi,
         functionName: "helloOffchain",
       });
 
