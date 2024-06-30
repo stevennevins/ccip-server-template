@@ -2,7 +2,6 @@ import { ethers } from "ethers";
 import {
   compileHelloContract,
   compileSignedHelloContract,
-  compileSimpleBytecodeContract,
 } from "./utils/compile";
 describe("compileHelloContract", () => {
   it("should compile the HelloVerifier contract", async () => {
@@ -51,20 +50,5 @@ describe("compileSignedHelloContract", () => {
     expect(abi.functions).toHaveProperty("signedHello()");
     expect(abi.functions).toHaveProperty("signedHelloCallback(bytes,bytes)");
     expect(abi.functions).toHaveProperty("signer()");
-  });
-});
-
-describe("compileSimpleBytecodeContract", () => {
-  it("should compile the SimpleBytecode contract", async () => {
-    const compiledContract = await compileSimpleBytecodeContract();
-
-    expect(compiledContract).toBeDefined();
-    expect(compiledContract.contracts).toBeDefined();
-
-    const contractName = "SimpleBytecode.sol";
-    const contract = compiledContract.contracts[contractName].SimpleBytecode;
-
-    expect(contract).toBeDefined();
-    expect(contract.evm.bytecode.object.length).toBeGreaterThan(0);
   });
 });

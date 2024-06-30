@@ -56,10 +56,3 @@ export async function compileSignedHelloContract(): Promise<any> {
     "../mockVerifiers/SignedHelloVerifier.sol"
   );
 }
-
-export async function compileSimpleBytecodeContract(): Promise<any> {
-  return compileContract(
-    "SimpleBytecode.sol",
-    "../mockVerifiers/SimpleBytecode.sol"
-  );
-}

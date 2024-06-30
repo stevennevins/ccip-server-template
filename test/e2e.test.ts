@@ -7,7 +7,6 @@ import dotenv from "dotenv";
 import { createTestClient, http, publicActions, walletActions } from "viem";
 import { localhost } from "viem/chains";
 import {
-  compileSimpleBytecodeContract,
   compileSignedHelloContract,
   compileHelloContract,
 } from "./utils/compile";
@@ -172,103 +171,6 @@ describe("E2E Tests with Local Ethereum Node", () => {
         abi: artifact.abi,
         functionName: "signedHello",
       });
-    });
-  });
-
-  describe("SimpleBytecode Contract Test", () => {
-    let simpleBytecodeContract: ethers.Contract;
-    let simpleBytecodeContractAddress: string;
-
-    beforeAll(async () => {
-      const simpleBytecodeArtifact = await compileSimpleBytecodeContract();
-      const contractName = "SimpleBytecode.sol";
-      const contract =
-        simpleBytecodeArtifact.contracts[contractName].SimpleBytecode;
-      const SimpleBytecodeFactory = new ethers.ContractFactory(
-        contract.abi,
-        contract.evm.bytecode.object,
-        signer
-      );
-      simpleBytecodeContract = await SimpleBytecodeFactory.deploy();
-      await simpleBytecodeContract.deployed();
-      simpleBytecodeContractAddress = simpleBytecodeContract.address;
-    });
-
-    it("should deploy the SimpleBytecode contract", () => {
-      expect(simpleBytecodeContractAddress).toBeTruthy();
-    });
-
-    it("should return 255 when called with viem", async () => {
-      const result = await viemClient.readContract({
-        address: simpleBytecodeContractAddress,
-        abi: [
-          {
-            type: "function",
-            name: "getValue",
-            inputs: [],
-            outputs: [{ type: "uint256" }],
-            stateMutability: "view",
-          },
-        ],
-        functionName: "getValue",
-      });
-
-      console.log("Result:", result);
-
-      expect(result).toBe(255n);
-    });
-
-    it("should return 255 when called using ethers", async () => {
-      const simpleBytecodeContractInterface = new ethers.utils.Interface([
-        "function getValue() view returns (uint256)",
-      ]);
-      const contract = new ethers.Contract(
-        simpleBytecodeContractAddress,
-        simpleBytecodeContractInterface,
-        provider
-      );
-
-      const result = await contract.getValue();
-
-      expect(result.toNumber()).toBe(255);
-    });
-  });
-
-  describe("Simple Contract Test", () => {
-    let simpleContract: ethers.Contract;
-
-    const simpleContractBytecode = "0x6960ff60005260206000f3600052600a6016f3";
-
-    beforeAll(async () => {
-      const factory = new ethers.ContractFactory(
-        [],
-        simpleContractBytecode,
-        signer
-      );
-      simpleContract = await factory.deploy();
-      await simpleContract.deployed();
-    });
-
-    it("should deploy the contract", async () => {
-      expect(simpleContract.address).toBeTruthy();
-    });
-
-    it("should call the simple contract using viem", async () => {
-      const result = await viemClient.call({
-        to: simpleContract.address,
-        data: "0x",
-      });
-
-      expect(result).toBeTruthy();
-    });
-
-    it("should call the simple contract using ethers", async () => {
-      const result = await provider.call({
-        to: simpleContract.address,
-        data: "0x",
-      });
-
-      expect(result).toBeTruthy();
     });
   });
 });
