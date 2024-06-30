@@ -7,7 +7,6 @@ import helloServiceAbi from "../src/handlers/helloService/helloServiceAbi.json";
 describe("CCIP Server", () => {
   const TEST_ADDR = "0x1234567890123456789012345678901234567890";
   const HELLO_MESSAGE = "hello";
-  const SIGNATURE_PREFIX = "0x1900";
 
   let app: ReturnType<typeof makeApp>;
   let signer: utils.SigningKey;
@@ -47,10 +46,7 @@ describe("CCIP Server", () => {
       expect(typeof decodedMessage).toBe("string");
       expect(decodedMessage).toBe(HELLO_MESSAGE);
 
-      const messageHash = utils.solidityKeccak256(
-        ["bytes", "bytes32"],
-        [SIGNATURE_PREFIX, utils.keccak256(result)]
-      );
+      const messageHash = utils.solidityKeccak256(["bytes"], [result]);
       const recoveredPubKey = recoverPublicKey(messageHash, signature);
       expect(recoveredPubKey).toBe(signer.publicKey);
     });

@@ -8,6 +8,7 @@ import { createTestClient, http, publicActions, walletActions } from "viem";
 import { localhost } from "viem/chains";
 import {
   compileSimpleBytecodeContract,
+  compileSignedHelloContract,
   compileHelloContract,
 } from "./utils/compile";
 import { spawn } from "child_process";
@@ -18,6 +19,7 @@ describe("E2E Tests with Local Ethereum Node", () => {
   let node: any;
   let ccipServer: any;
   let viemClient: any;
+  let serverSigner: utils.SigningKey;
 
   beforeAll(async () => {
     dotenv.config();
@@ -34,7 +36,7 @@ describe("E2E Tests with Local Ethereum Node", () => {
     const ccipread = require("@chainlink/ethers-ccip-read-provider");
     signer = new ccipread.CCIPReadProvider(provider).getSigner(0);
 
-    const serverSigner = new utils.SigningKey(getEnv("SERVER_PRIVATE_KEY"));
+    serverSigner = new utils.SigningKey(getEnv("SERVER_PRIVATE_KEY"));
     const basePath = "/";
     ccipServer = makeApp(serverSigner, basePath);
     await ccipServer.listen(8000);
@@ -133,6 +135,43 @@ describe("E2E Tests with Local Ethereum Node", () => {
       });
 
       expect(result).toBe("hello");
+    });
+  });
+
+  describe("SignedHelloVerifier Contract Test", () => {
+    let signedHelloVerifierContract: ethers.Contract;
+    let signedHelloVerifierContractAddress: string;
+    let artifact: any;
+
+    beforeAll(async () => {
+      const signedHelloArtifact = await compileSignedHelloContract();
+      const contractName = "SignedHelloVerifier.sol";
+      artifact =
+        signedHelloArtifact.contracts[contractName].SignedHelloVerifier;
+      const SignedHelloVerifierFactory = new ethers.ContractFactory(
+        artifact.abi,
+        artifact.evm.bytecode.object,
+        signer
+      );
+      signedHelloVerifierContract = await SignedHelloVerifierFactory.deploy();
+      await signedHelloVerifierContract.deployed();
+      signedHelloVerifierContractAddress = signedHelloVerifierContract.address;
+      const privateKey = getEnv("SERVER_PRIVATE_KEY");
+      const wallet = new ethers.Wallet(privateKey);
+      const publicKey = wallet.address;
+      await signedHelloVerifierContract.setSigner(publicKey);
+    });
+
+    it("should deploy the SignedHelloVerifier contract", () => {
+      expect(signedHelloVerifierContractAddress).toBeTruthy();
+    });
+
+    it("should call the signedHello function of SignedHelloVerifier contract using viem and return the signed message", async () => {
+      await viemClient.readContract({
+        address: signedHelloVerifierContractAddress,
+        abi: artifact.abi,
+        functionName: "signedHello",
+      });
     });
   });
 

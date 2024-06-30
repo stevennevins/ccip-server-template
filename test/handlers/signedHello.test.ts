@@ -27,10 +27,7 @@ describe("SignedHelloService", () => {
 
   it("should allow public key recovery", async () => {
     const { result, signature } = await signedHelloService.getSignedHello();
-    const messageHash = ethers.utils.solidityKeccak256(
-      ["bytes", "bytes32"],
-      ["0x1900", ethers.utils.keccak256(result)]
-    );
+    const messageHash = ethers.utils.solidityKeccak256(["bytes"], [result]);
     const recoveredPubKey = ethers.utils.recoverPublicKey(
       messageHash,
       signature

@@ -1,14 +1,13 @@
 import {
   SigningKey,
   solidityKeccak256,
-  keccak256,
   joinSignature,
   defaultAbiCoder,
+  splitSignature,
 } from "ethers/lib/utils";
 import { HandlerDescription, HandlerFunc } from "@chainlink/ccip-read-server";
 
 const helloMessage: string = "hello";
-const signaturePrefix: string = "0x1900";
 
 export class SignedHelloHandler implements HandlerDescription {
   public readonly type: string = "signedHello";
@@ -24,13 +23,11 @@ export class SignedHelloHandler implements HandlerDescription {
   getSignedHello = async (): Promise<{ result: string; signature: string }> => {
     const result = defaultAbiCoder.encode(["string"], [helloMessage]);
 
-    const messageHash = solidityKeccak256(
-      ["bytes", "bytes32"],
-      [signaturePrefix, keccak256(result)]
-    );
+    const messageHash = solidityKeccak256(["bytes"], [result]);
 
     const signedData = this.signer.signDigest(messageHash);
-    const signature = joinSignature(signedData);
+    const { r, s, v } = splitSignature(signedData);
+    const signature = joinSignature({ r, s, v });
 
     return {
       result,

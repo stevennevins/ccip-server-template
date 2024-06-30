@@ -22,7 +22,7 @@ contract HelloVerifier {
 
     function helloOffchain() external view returns (string memory) {
         string[] memory urls = new string[](1);
-        urls[0] = "http://localhost:8000/{sender}/{data}.json"; // Replace with your actual server URL
+        urls[0] = "http://localhost:8000/{sender}/{data}.json";
         bytes memory callData = abi.encodeWithSelector(Gateway.hello.selector);
         revert OffchainLookup(
             address(this),
