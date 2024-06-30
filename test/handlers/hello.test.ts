@@ -1,4 +1,4 @@
-import { HelloHandler } from "../../src/handlers/helloService/helloService";
+import { HelloHandler } from "../../src/handlers/helloService";
 
 describe("HelloService", () => {
   let helloService: HelloHandler;

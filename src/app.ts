@@ -1,12 +1,14 @@
 import { Server } from "@chainlink/ccip-read-server";
 import { utils } from "ethers";
-import { fromHumanAbi } from "./utils";
-import { SignedHelloHandler } from "./handlers/signedHelloService/signedHelloService";
-import signedHelloAbi from "./handlers/signedHelloService/signedHelloAbi.json";
-import { HelloHandler } from "./handlers/helloService/helloService";
-import helloServiceAbi from "./handlers/helloService/helloServiceAbi.json";
+import { compileContract } from "./utils";
+import { SignedHelloHandler } from "./handlers/signedHelloService";
+import { HelloHandler } from "./handlers/helloService";
 
-const gatewayAbi = fromHumanAbi([...signedHelloAbi, ...helloServiceAbi]);
+const compiledContract = compileContract(
+  "IGateway",
+  "../src/handlers/IGateway.sol"
+);
+const gatewayAbi = compiledContract.contracts["IGateway"]["IGateway"].abi;
 
 export function makeApp(signer: utils.SigningKey, basePath: string) {
   const server = new Server();

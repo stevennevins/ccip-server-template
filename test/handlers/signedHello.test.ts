@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import { SigningKey } from "ethers/lib/utils";
-import { SignedHelloHandler } from "../../src/handlers/signedHelloService/signedHelloService";
+import { SignedHelloHandler } from "../../src/handlers/signedHelloService";
 
 describe("SignedHelloService", () => {
   let signer: SigningKey;

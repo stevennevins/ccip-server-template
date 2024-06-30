@@ -1,8 +1,13 @@
 import { utils, ethers } from "ethers";
 import supertest from "supertest";
 import { makeApp } from "../src/app";
-import signedHelloAbi from "../src/handlers/signedHelloService/signedHelloAbi.json";
-import helloServiceAbi from "../src/handlers/helloService/helloServiceAbi.json";
+import { compileContract } from "../src/utils";
+
+const compiledContract = compileContract(
+  "IGateway",
+  "../src/handlers/IGateway.sol"
+);
+const gatewayAbi = compiledContract.contracts["IGateway"]["IGateway"].abi;
 
 describe("CCIP Server", () => {
   const TEST_ADDR = "0x1234567890123456789012345678901234567890";
@@ -26,7 +31,7 @@ describe("CCIP Server", () => {
 
   describe("signedHello", () => {
     it("should return correct data and allow public key recovery", async () => {
-      const signedHelloIface = new ethers.utils.Interface(signedHelloAbi);
+      const signedHelloIface = new ethers.utils.Interface(gatewayAbi);
       const signedHelloCalldata =
         signedHelloIface.encodeFunctionData("signedHello");
 
@@ -54,7 +59,7 @@ describe("CCIP Server", () => {
 
   describe("hello", () => {
     it("should return the correct greeting", async () => {
-      const helloIface = new ethers.utils.Interface(helloServiceAbi);
+      const helloIface = new ethers.utils.Interface(gatewayAbi);
       const helloCalldata = helloIface.encodeFunctionData("hello");
 
       const response = await makeRequest(TEST_ADDR, helloCalldata);
@@ -70,7 +75,7 @@ describe("CCIP Server", () => {
     });
 
     it("should return a string", async () => {
-      const helloIface = new ethers.utils.Interface(helloServiceAbi);
+      const helloIface = new ethers.utils.Interface(gatewayAbi);
       const helloCalldata = helloIface.encodeFunctionData("hello");
 
       const response = await makeRequest(TEST_ADDR, helloCalldata);
