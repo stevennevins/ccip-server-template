@@ -117,5 +117,9 @@ export function makeApp(signer: utils.SigningKey, basePath: string) {
 ## Usage
 
 1. Clone the repository.
+
 2. Install dependencies using `npm install`.
-3. Run tests using `npm test`.
+
+3. Install Foundry by following the instructions at https://github.com/foundry-rs/foundry.
+
+4. Run tests using `npm test`.
