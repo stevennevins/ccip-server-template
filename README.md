@@ -2,40 +2,46 @@
 
 ## Overview
 
-The Cross-Chain Interoperability Protocol (CCIP) is a standardized method for smart contracts to access off-chain data and services. It was introduced as part of Ethereum Improvement Proposal (EIP) 3668 to address the limitations of existing oracle solutions and provide a more flexible and secure way for smart contracts to interact with external data sources.
+The Cross-Chain Interoperability Protocol (CCIP) is a standardized method for smart contracts to access off-chain data and services. This repository demonstrates a practical implementation of CCIP, showcasing how smart contracts can interact with off-chain data sources while maintaining the security and transparency of the blockchain.
 
-Key aspects of CCIP:
+## Writing a Handler for CCIP Read Server
 
-The core mechanism of CCIP involves a smart contract reverting with an `OffchainLookup` error when it needs external data. This error contains all the information needed for a client to fetch the data off-chain and submit it back to the contract for verification.
+Handlers are the core components of a CCIP server. They process off-chain requests and return the required data. Here's a step-by-step guide on how to write a handler:
 
-This repository demonstrates a practical implementation of CCIP, showcasing how smart contracts can interact with off-chain data sources while maintaining the security and transparency of the blockchain.
+### 1. Implement the Handler Class
 
-## Implementation Details
+Create a new file for your handler (e.g., `src/handlers/yourHandlerService.ts`) and implement a class that follows the `HandlerDescription` interface:
 
-### Writing a Handler
+```typescript
+import { HandlerDescription, HandlerFunc } from "@chainlink/ccip-read-server";
 
-Handlers are the core components of a CCIP server. They process off-chain requests and return the required data. Here's a general structure for writing a handler:
+export class YourHandler implements HandlerDescription {
+  public readonly type: string = "yourHandlerType";
+  public readonly func: HandlerFunc;
 
-1. Implement the `HandlerDescription` interface, define a `type` property to identify the handler, and implement a `func` property as an async function that can processes the request which contains the data from the revert and returns the result to the callback function specified.
-2. Write the verifier contract that handles the callback from the client
-3. Add the handler to the gateway.
+  constructor() {
+    this.func = async () => {
+      const result = await this.yourMethod();
+      return [result];
+    };
+  }
 
-Example structure:
-Here's a detailed example of implementing a handler, using the `HelloVerifier.sol` contract and adding the `HelloHandler` to the gateway in `app.ts`.
+  yourMethod = async (): Promise<string> => {
+    // Implement your logic here
+    return "your result";
+  };
+}
 
-#### Step 1: Implement the `HelloVerifier` Contract
+### 2. Write the Verifier Contract
 
-The `HelloVerifier` contract is a smart contract that includes a function `helloOffchain` which reverts with an `OffchainLookup` error. This error contains the necessary information for the client to fetch data off-chain.
+Create a Solidity contract that includes a function to trigger the off-chain lookup and a callback function to process the result. Below is an example of how to write a verifier contract:
+
 
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-interface Gateway {
-    function hello() external view returns (string memory);
-}
-
-contract HelloVerifier {
+contract YourVerifier {
     error OffchainLookup(
         address sender,
         string[] urls,
@@ -44,73 +50,56 @@ contract HelloVerifier {
         bytes extraData
     );
 
-    function helloOffchain() external view returns (string memory) {
+    function yourOffchainFunction() external view returns (string memory) {
         string[] memory urls = new string[](1);
         urls[0] = "http://localhost:8000/{sender}/{data}.json";
-        bytes memory callData = abi.encodeWithSelector(Gateway.hello.selector);
+        bytes memory callData = abi.encodeWithSignature("yourMethod()");
         revert OffchainLookup(
             address(this),
             urls,
             callData,
-            this.helloCallback.selector,
+            this.yourCallback.selector,
             ""
         );
     }
 
-    function helloCallback(
+    function yourCallback(
         bytes calldata result,
         bytes calldata
     ) public pure returns (string memory) {
-        string memory decodedResult = abi.decode(result, (string));
-        return decodedResult;
+        return abi.decode(result, (string));
     }
 }
 ```
 
-#### Step 2: Write the `helloService.ts`
+### 3. Add the Handler to the Gateway
 
-The `helloService.ts` file contains the implementation of the `HelloHandler` class. This class defines the handler that processes the off-chain requests and returns the required data.
-
-Here's an example of the `helloService.ts` implementation:
+In your `src/app.ts` file, import your new handler and add it to the server:
 
 ```typescript
-import { HandlerDescription, HandlerFunc } from "@chainlink/ccip-read-server";
-
-export class HelloHandler implements HandlerDescription {
-  public readonly type: string = "hello";
-  public readonly func: HandlerFunc;
-
-  constructor() {
-    this.func = async () => {
-      const result = await this.hello();
-      return [result];
-    };
-  }
-
-  hello = async (): Promise<string> => {
-    return "hello";
-  };
-}
-```
-
-#### Step 3: Add the `HelloHandler` to the Gateway
-
-In your `app.ts` file, you need to add the `HelloHandler` to the gateway. This handler will process the off-chain requests and return the required data.
-
-Here's an example of how to add the `HelloHandler`:
-
-```typescript
-import { HelloHandler } from "./handlers/helloService/helloService";
-import helloServiceAbi from "./handlers/helloService/helloServiceAbi.json";
+import { Server } from "@chainlink/ccip-read-server";
+import { utils } from "ethers";
+import { YourHandler } from "./handlers/yourHandlerService";
+import { gatewayAbi } from "./config";
 
 export function makeApp(signer: utils.SigningKey, basePath: string) {
   const server = new Server();
-  
-  const helloHandler = new HelloHandler();
-  
-  server.add(helloServiceAbi, [helloHandler]);
-
+  const handlers = [new YourHandler()];
+  server.add(gatewayAbi, handlers);
   return server.makeApp(basePath);
+}
+```
+
+### 4. Update the Gateway ABI
+
+Ensure that your `gatewayAbi` in `src/config/abi.ts` includes the interface for your new handler. You can update this by adding it to the IGateway interface like below:
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+interface IGateway {
+    function yourOffchainFunction() external view returns (string memory);
 }
 ```
 
