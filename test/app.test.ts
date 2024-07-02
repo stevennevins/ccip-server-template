@@ -5,7 +5,7 @@ import { compileContract } from "../src/utils";
 
 const compiledContract = compileContract(
   "IGateway",
-  "../src/handlers/IGateway.sol"
+  "../handlers/IGateway.sol"
 );
 const gatewayAbi = compiledContract.contracts["IGateway"]["IGateway"].abi;
 

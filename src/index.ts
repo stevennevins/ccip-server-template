@@ -1,15 +1,10 @@
-import dotenv from "dotenv";
 import { makeApp } from "./app";
 import { utils } from "ethers";
-import { getEnv } from "./utils";
+import { SERVER_PRIVATE_KEY, BASE_PATH, PORT } from "./config";
 
-dotenv.config();
+const signer = new utils.SigningKey(SERVER_PRIVATE_KEY);
 
-const signer = new utils.SigningKey(getEnv("SERVER_PRIVATE_KEY"));
-const basePath = "/";
-const port = 8000;
+const app = makeApp(signer, BASE_PATH);
+app.listen(PORT);
 
-const app = makeApp(signer, basePath);
-app.listen(port);
-
-console.log(`Listening to http://127.0.0.1:${port}/`);
+console.log(`Listening to http://127.0.0.1:${PORT}/`);
