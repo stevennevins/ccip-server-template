@@ -31,11 +31,11 @@ export class YourHandler implements HandlerDescription {
     return "your result";
   };
 }
+```
 
 ### 2. Write the Verifier Contract
 
 Create a Solidity contract that includes a function to trigger the off-chain lookup and a callback function to process the result. Below is an example of how to write a verifier contract:
-
 
 ```solidity
 // SPDX-License-Identifier: MIT
