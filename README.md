@@ -1,5 +1,9 @@
 # CCIP Server Template
 
+## Purpose
+
+This repository serves as a template for setting up a Cross-Chain Interoperability Protocol (CCIP) server.
+
 ## Overview
 
 The Cross-Chain Interoperability Protocol (CCIP) is a standardized method for smart contracts to access off-chain data and services. This repository demonstrates a practical implementation of CCIP, showcasing how smart contracts can interact with off-chain data sources while maintaining the security and transparency of the blockchain.
@@ -92,7 +96,7 @@ export function makeApp(signer: utils.SigningKey, basePath: string) {
 
 ### 4. Update the Gateway ABI
 
-Ensure that your `gatewayAbi` in `src/config/abi.ts` includes the interface for your new handler. You can update this by adding it to the IGateway interface like below:
+Ensure that your `gatewayAbi` in `src/contracts/IGateway.sol` includes the interface for your new handler. You can update this by adding it to the interface like below:
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -107,7 +111,7 @@ interface IGateway {
 
 Testing is crucial for ensuring the reliability and correctness of your CCIP handler. Follow these steps to write comprehensive tests:
 
-#### a. Unit Tests
+#### Unit Tests
 
 Start by writing unit tests for your handler. Create a new file in the `test/handlers` directory (e.g., `test/handlers/yourHandler.test.ts`):
 
@@ -129,7 +133,7 @@ describe("YourHandler", () => {
 ```
 
 
-#### b. Server Integration Tests
+#### Server Integration Tests
 
 Next, add integration tests in `test/app.test.ts` to ensure your handler works correctly with the server:
 
@@ -155,7 +159,7 @@ describe("yourOffchainFunction", () => {
 });
 ```
 
-#### c. End-to-End Tests
+#### End-to-End Tests
 
 Finally, create an e2e test file (e.g., `test/e2e.test.ts`) to verify that your contract and server communicate correctly:
 
@@ -184,9 +188,9 @@ describe("E2E Tests", () => {
 });
 ```
 
-Make sure to implement the necessary utility functions (`deployContract`, `startServer`, and `stopServer`) in a `testUtils.ts` file.
+## Conclusion
 
-By following these testing steps, you'll ensure that your handler works correctly at all levels: as a standalone unit, integrated with the server, and in communication with the smart contract.
+This template repository provides a fast way to start writing smart contracts that leverage CCIP. It includes a robust end-to-end testing setup to help you integrate these off-chain features efficiently. With pre-configured environment settings, contract compilation utilities, and comprehensive test examples, you can quickly set up your project and focus on developing your smart contract logic.
 
 ## Usage
 
