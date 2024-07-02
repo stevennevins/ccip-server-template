@@ -1,13 +1,7 @@
 import { utils, ethers } from "ethers";
 import supertest from "supertest";
 import { makeApp } from "../src/app";
-import { compileContract } from "../src/utils";
-
-const compiledContract = compileContract(
-  "IGateway",
-  "../handlers/IGateway.sol"
-);
-const gatewayAbi = compiledContract.contracts["IGateway"]["IGateway"].abi;
+import { gatewayAbi } from "../src/config";
 
 describe("CCIP Server", () => {
   const TEST_ADDR = "0x1234567890123456789012345678901234567890";
