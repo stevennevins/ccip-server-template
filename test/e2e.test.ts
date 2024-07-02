@@ -1,7 +1,5 @@
 import { ethers } from "ethers";
 import { JsonRpcProvider } from "@ethersproject/providers";
-import { makeApp } from "../src/app";
-import { utils } from "ethers";
 import { getEnv } from "../src/utils";
 import dotenv from "dotenv";
 import { createTestClient, http, publicActions, walletActions } from "viem";
@@ -11,14 +9,13 @@ import {
   compileHelloContract,
 } from "./utils/compile";
 import { spawn } from "child_process";
+import { startServer, stopServer } from "./utils";
 
 describe("E2E Tests with Local Ethereum Node", () => {
   let provider: JsonRpcProvider;
   let signer: ethers.Signer;
   let node: any;
-  let ccipServer: any;
   let viemClient: any;
-  let serverSigner: utils.SigningKey;
 
   beforeAll(async () => {
     dotenv.config();
@@ -35,10 +32,7 @@ describe("E2E Tests with Local Ethereum Node", () => {
     const ccipread = require("@chainlink/ethers-ccip-read-provider");
     signer = new ccipread.CCIPReadProvider(provider).getSigner(0);
 
-    serverSigner = new utils.SigningKey(getEnv("SERVER_PRIVATE_KEY"));
-    const basePath = "/";
-    ccipServer = makeApp(serverSigner, basePath);
-    await ccipServer.listen(8000);
+    await startServer();
 
     viemClient = createTestClient({
       chain: localhost,
@@ -51,14 +45,10 @@ describe("E2E Tests with Local Ethereum Node", () => {
 
   afterAll(async () => {
     node.kill();
+    await stopServer();
   });
 
   describe("Setup Tests", () => {
-    it("should create the app", () => {
-      expect(ccipServer).toBeDefined();
-      expect(ccipServer).toBeInstanceOf(Function);
-    });
-
     it("should confirm the chain id and rpc url of the anvil node", async () => {
       const network = await provider.getNetwork();
       expect(network.chainId).toBe(31337);
