@@ -103,6 +103,91 @@ interface IGateway {
 }
 ```
 
+### 5. Writing Tests for Your Handler
+
+Testing is crucial for ensuring the reliability and correctness of your CCIP handler. Follow these steps to write comprehensive tests:
+
+#### a. Unit Tests
+
+Start by writing unit tests for your handler. Create a new file in the `test/handlers` directory (e.g., `test/handlers/yourHandler.test.ts`):
+
+```typescript
+import { YourHandler } from "../../src/handlers/yourHandlerService";
+
+describe("YourHandler", () => {
+  let yourHandler: YourHandler;
+
+  beforeAll(() => {
+    yourHandler = new YourHandler();
+  });
+
+  it("should return the correct result", async () => {
+    const result = await yourHandler.yourMethod();
+    expect(result).toBe("your result");
+  });
+});
+```
+
+
+#### b. Server Integration Tests
+
+Next, add integration tests in `test/app.test.ts` to ensure your handler works correctly with the server:
+
+
+Add a new describe block for your handler:
+
+```typescript
+describe("yourOffchainFunction", () => {
+  it("should return correct data", async () => {
+    const yourHandlerIface = new ethers.utils.Interface(gatewayAbi);
+    const yourHandlerCalldata = yourHandlerIface.encodeFunctionData("yourOffchainFunction");
+
+    const response = await makeRequest(TEST_ADDR, yourHandlerCalldata);
+    expect(response.status).toBe(200);
+
+    const [result] = yourHandlerIface.decodeFunctionResult(
+      "yourOffchainFunction",
+      response.body.data
+    );
+
+    expect(result).toBe("your result");
+  });
+});
+```
+
+#### c. End-to-End Tests
+
+Finally, create an e2e test file (e.g., `test/e2e.test.ts`) to verify that your contract and server communicate correctly:
+
+```typescript
+import { ethers } from "ethers";
+import { deployContract, startServer, stopServer } from "./testUtils";
+
+describe("E2E Tests", () => {
+  let provider: ethers.providers.JsonRpcProvider;
+  let yourVerifier: ethers.Contract;
+
+  beforeAll(async () => {
+    await startServer();
+    provider = new ethers.providers.JsonRpcProvider("http://localhost:8545");
+    yourVerifier = await deployContract("YourVerifier", provider);
+  });
+
+  afterAll(async () => {
+    await stopServer();
+  });
+
+  it("should correctly execute yourOffchainFunction", async () => {
+    const result = await yourVerifier.yourOffchainFunction();
+    expect(result).toBe("your result");
+  });
+});
+```
+
+Make sure to implement the necessary utility functions (`deployContract`, `startServer`, and `stopServer`) in a `testUtils.ts` file.
+
+By following these testing steps, you'll ensure that your handler works correctly at all levels: as a standalone unit, integrated with the server, and in communication with the smart contract.
+
 ## Usage
 
 1. Clone the repository.
