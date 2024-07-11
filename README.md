@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This repository serves as a template for setting up a Cross-Chain Interoperability Protocol (CCIP) server.
+This repository serves as a template for setting up a Cross-Chain Interoperability Protocol (CCIP) server for implementing [EIP-3668](https://eips.ethereum.org/EIPS/eip-3668).
 
 ## Overview
 
